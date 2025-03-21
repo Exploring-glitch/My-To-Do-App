@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script> 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.6/axios.min.js"></script>
+    <title>To-Do with Auth</title>
+</head>
+<body class=" bg-gray-700">
+    <div id="authdiv" class="flex justify-center items-center min-h-screen gap-5">
+        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-80 p-6"> 
+            <center><h1 class="underline font-semibold text-3xl">Signup</h1></center>
+            <center>
+                <div class="space-y-5 mt-10 mb-10 text-black">
+                    <input id="signupUsername" type="text" placeholder="Username" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signupPassword" type="text" placeholder="Password" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                </div>
+            </center>
+            <center><button onclick="signupFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
+        </div> 
+        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-80 p-6"> 
+            <center><h1 class="underline font-semibold text-3xl">Signin</h1></center>
+            <center>
+                <div class="space-y-5 mt-10 mb-10 text-black">
+                    <input id="signinUsername" type="text" placeholder="Username" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signinPassword" type="text" placeholder="Password" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                </div>
+            </center>
+            <center><button onclick="signinFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
+        </div> 
+    </div>
+    
+    <div id="todoappdiv" class="hidden bg-gray-800 min-h-screen">
+        <button id="logoutButtondiv" onclick="logoutFunc()" class="my-3 mx-3 bg-red-600 text-white rounded-md hover:bg-red-700 shadow-md hover:scale-105 font-medium p-2">Log out</button>
+        <div class="flex justify-center">
+            <div class="bg-gray-100 border-2 border-black m-4 rounded-lg shadow-lg w-full max-w-lg p-6">
+                <h1 class="text-2xl font-semibold text-center underline mb-4">TO-DO LIST</h1>
+                <div id="todo-container" class="space-y-3"></div>
+                <div class="flex gap-2 my-5">
+                    <input id="todo-input" type="text" placeholder="Add a new task..." class="flex-grow bg-white border-2 border-gray-600 text-black rounded-md p-2 shadow-sm focus:border-gray-700">
+                    <button onclick="addTask()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Add Task</button> 
+                </div>
+            </div> 
+        </div> 
+    </div>
+</body>
+
+<script>
+    async function signupFunc(){
+        console.log("inside signup");
+        const username = document.getElementById("signupUsername").value;
+        const password = document.getElementById("signupPassword").value;
+        
+        try{
+            await axios.post("http://localhost:3005/signup", { //sends background request to our backend
+            username : username,
+            password : password
+            })
+            alert("You have successfully signed up");
+            document.getElementById("signupUsername").value = "";
+            document.getElementById("signupPassword").value = "";
+        }
+        catch{
+            console.log("Signup error");
+            alert("Signup request falied!");
+        }   
+    }
+    
+    //window.onload = loadtodoapp;
+    async function signinFunc(){
+        const username = document.getElementById("signinUsername").value;
+        const password = document.getElementById("signinPassword").value;
+
+        try{
+            const response = await axios.post("http://localhost:3005/signin", {
+        username : username,
+        password : password
+        })
+        localStorage.setItem("token",response.data.token);
+        alert("You have successfully signed in");
+
+        document.getElementById("signinUsername").value = "";
+        document.getElementById("signinPassword").value = "";
+
+        loadtodoapp();
+        }
+        catch{
+            alert("Invalid username or password");
+        }
+    }
+
+    async function loadtodoapp(){
+        const token = localStorage.getItem("token");
+        if(!token){
+            return;
+        }
+        //const response = await axios.get("http://localhost:3005/me",{ 
+        //headers: { token : localStorage.getItem("token")}  
+        //})
+        //document.getElementById("information").innerHTML = "Username is " + response.data.username + " and Password is " + response.data.password;
+        document.getElementById("authdiv").classList.add("hidden");
+        document.getElementById("todoappdiv").classList.remove("hidden");
+
+        let todos = [];
+        function capitalize(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+        function addTask() {
+            let inputElement = document.getElementById("todo-input");
+            let taskText = inputElement.value.trim();
+            
+            if (taskText === "") {
+                alert("Task cannot be empty!");
+                return;
+            }
+
+            todos.push({ title: capitalize(taskText) });
+            inputElement.value = "";
+            render();
+        }
+        function deleteTask(index) {
+            todos.splice(index, 1);
+            render();
+        }
+        function editTask(index) {
+            let newTitle = prompt("Edit your task:", todos[index].title);
+            if (newTitle !== null && newTitle.trim() !== "") {
+                todos[index].title = capitalize(newTitle.trim());
+                render();
+            }
+        }
+        function createTodoElement(task, index) {
+            const taskDiv = document.createElement("div");
+            taskDiv.classList.add("flex", "justify-between", "items-center", "bg-white", "p-3", "rounded-md", "shadow-md", "border", "border-gray-300");
+
+            const taskText = document.createElement("span");
+            taskText.innerText = "• " + task.title;
+            taskText.classList.add("text-lg", "text-gray-700");
+
+            const buttonContainer = document.createElement("div");
+
+            const editButton = document.createElement("button");
+            editButton.innerText = "Edit";
+            editButton.classList.add("text-white", "bg-blue-500", "hover:bg-blue-600", "py-1", "px-3", "rounded-md", "shadow-sm", "mr-2", "hover:scale-105");
+            editButton.onclick = () => editTask(index);
+
+            const deleteButton = document.createElement("button");
+            deleteButton.innerText = "Delete";
+            deleteButton.classList.add("text-white", "bg-red-500", "hover:bg-red-600", "py-1", "px-3", "rounded-md", "shadow-sm", "hover:scale-105");
+            deleteButton.onclick = () => deleteTask(index);
+
+            buttonContainer.appendChild(editButton);
+            buttonContainer.appendChild(deleteButton);
+
+            taskDiv.appendChild(taskText);
+            taskDiv.appendChild(buttonContainer);
+
+            return taskDiv;
+        }
+        function render() {
+            const container = document.getElementById("todo-container");
+            container.innerHTML = "";
+
+            todos.forEach((task, index) => {
+                container.appendChild(createTodoElement(task, index));
+            });
+        }
+            
+    }
+    
+    async function logoutFunc(){
+        localStorage.removeItem("token")
+        alert("Logged out successfully");
+        location.reload();
+    }
+</script>
+</html>
