@@ -9,22 +9,24 @@
 </head>
 <body class=" bg-gray-700">
     <div id="authdiv" class="flex justify-center items-center min-h-screen gap-5">
-        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-80 p-6"> 
+        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
             <center><h1 class="underline font-semibold text-3xl">Signup</h1></center>
             <center>
                 <div class="space-y-5 mt-10 mb-10 text-black">
-                    <input id="signupUsername" type="text" placeholder="Username" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signupEmail" type="text" placeholder="Email" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                     <input id="signupPassword" type="text" placeholder="Password" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signupName" type="text" placeholder="Name" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                 </div>
             </center>
             <center><button onclick="signupFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
         </div> 
-        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-80 p-6"> 
+        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
             <center><h1 class="underline font-semibold text-3xl">Signin</h1></center>
             <center>
                 <div class="space-y-5 mt-10 mb-10 text-black">
-                    <input id="signinUsername" type="text" placeholder="Username" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signinEmail" type="text" placeholder="Email" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                     <input id="signinPassword" type="text" placeholder="Password" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
+                    <input id="signinName" type="text" placeholder="Name" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                 </div>
             </center>
             <center><button onclick="signinFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
@@ -48,44 +50,55 @@
 
 <script>
     async function signupFunc(){
-        console.log("inside signup");
-        const username = document.getElementById("signupUsername").value;
+        const email = document.getElementById("signupEmail").value;
         const password = document.getElementById("signupPassword").value;
+        const name = document.getElementById("signupName").value;
         
         try{
-            await axios.post("http://localhost:3005/signup", { //sends background request to our backend
-            username : username,
-            password : password
+            const response = await axios.post("http://localhost:3005/signup", { //sends background request to our backend
+            email : email,
+            password : password,
+            name: name
             })
+
             alert("You have successfully signed up");
-            document.getElementById("signupUsername").value = "";
+            document.getElementById("signupEmail").value = "";
             document.getElementById("signupPassword").value = "";
+            document.getElementById("signupName").value = "";
         }
-        catch{
-            console.log("Signup error");
-            alert("Signup request falied!");
+        catch(error){
+            if(error.response && error.response.data.errors){
+                alert(error.response.data.errors.join("\n"));
+            }
+            else if(error.response && error.response.data.message){
+                alert(error.response.data.message);
+            }
+            else{
+                alert("Signup request falied!");
+            }
         }   
     }
     
     //window.onload = loadtodoapp;
     async function signinFunc(){
-        const username = document.getElementById("signinUsername").value;
+        const email = document.getElementById("signinEmail").value;
         const password = document.getElementById("signinPassword").value;
 
         try{
             const response = await axios.post("http://localhost:3005/signin", {
-        username : username,
-        password : password
-        })
-        localStorage.setItem("token",response.data.token);
-        alert("You have successfully signed in");
+            username : username,
+            password : password
+            })
 
-        document.getElementById("signinUsername").value = "";
-        document.getElementById("signinPassword").value = "";
+            localStorage.setItem("token",response.data.token);
+            alert("You have successfully signed in");
 
-        loadtodoapp();
+            document.getElementById("signinEmail").value = "";
+            document.getElementById("signinPassword").value = "";
+
+            loadtodoapp();
         }
-        catch{
+        catch(error){ //CORRECT THE ERROR PART
             alert("Invalid username or password");
         }
     }
