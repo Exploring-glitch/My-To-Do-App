@@ -7,9 +7,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.7.6/axios.min.js"></script>
     <title>To-Do with Auth</title>
 </head>
-<body class=" bg-gray-700">
-    <div id="authdiv" class="flex justify-center items-center min-h-screen gap-5">
-        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
+<body class="bg-gray-700">
+
+    <div id="navdiv">
+        <nav class="flex justify-between">
+            <h1 class="mx-10 text-white font-bold text-2xl">To-Do App</h1>
+            <button onclick="showSigninFunc()" class="bg-orange-700 text-white px-3 py-2 mr-10 rounded-md hover:bg-orange-800 shadow-md hover:scale-105 font-medium">Signin</button>
+        </nav>
+        <hr>
+    </div>
+    
+    <div class="flex justify-center items-center min-h-screen">
+        <div id="signupdiv" class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
             <center><h1 class="underline font-semibold text-3xl">Signup</h1></center>
             <center>
                 <div class="space-y-5 mt-10 mb-10 text-black">
@@ -20,7 +29,8 @@
             </center>
             <center><button onclick="signupFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
         </div> 
-        <div class="bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
+    
+        <div id="signindiv" class="hidden bg-gray-100 border-2 border-black my-auto rounded-lg shadow-lg w-full max-w-lg h-96 p-6"> 
             <center><h1 class="underline font-semibold text-3xl">Signin</h1></center>
             <center>
                 <div class="space-y-5 mt-10 mb-10 text-black">
@@ -29,25 +39,26 @@
                 </div>
             </center>
             <center><button onclick="signinFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
-        </div> 
-    </div>
-    
-    <div id="todoappdiv" class="hidden bg-gray-800 min-h-screen">
-        <button id="logoutButtondiv" onclick="logoutFunc()" class="my-3 mx-3 bg-red-600 text-white rounded-md hover:bg-red-700 shadow-md hover:scale-105 font-medium p-2">Log out</button>
-        <div class="flex justify-center">
-            <div class="bg-gray-100 border-2 border-black m-4 rounded-lg shadow-lg w-full max-w-lg p-6">
-                <h1 class="text-2xl font-semibold text-center underline mb-4">TO-DO LIST</h1>
-                <div id="todo-container" class="space-y-3"></div>
-                <div class="flex gap-2 my-5">
-                    <input id="todo-input" type="text" placeholder="Add a new task..." class="flex-grow bg-white border-2 border-gray-600 text-black rounded-md p-2 shadow-sm focus:border-gray-700">
-                    <button onclick="addTask()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Add Task</button> 
-                </div>
+        </div>
+        
+        <div id="todoappdiv" class="hidden bg-gray-800 min-h-screen">
+            <button id="logoutButtondiv" onclick="logoutFunc()" class="my-3 mx-3 bg-red-600 text-white rounded-md hover:bg-red-700 shadow-md hover:scale-105 font-medium p-2">Log out</button>
+            <div class="flex justify-center">
+                <div class="bg-gray-100 border-2 border-black m-4 rounded-lg shadow-lg w-full max-w-lg p-6">
+                    <h1 class="text-2xl font-semibold text-center underline mb-4">TO-DO LIST</h1>
+                    <div id="todo-container" class="space-y-3"></div>
+                    <div class="flex gap-2 my-5">
+                        <input id="todo-input" type="text" placeholder="Add a new task..." class="flex-grow bg-white border-2 border-gray-600 text-black rounded-md p-2 shadow-sm focus:border-gray-700">
+                        <button onclick="addTask()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Add Task</button> 
+                    </div>
+                </div> 
             </div> 
-        </div> 
+        </div>
     </div>
 </body>
 
 <script>
+    
     async function signupFunc(){
         const email = document.getElementById("signupEmail").value;
         const password = document.getElementById("signupPassword").value;
@@ -61,9 +72,16 @@
             })
 
             alert("You have successfully signed up");
+
             document.getElementById("signupEmail").value = "";
             document.getElementById("signupPassword").value = "";
             document.getElementById("signupName").value = "";
+
+            document.getElementById("navdiv").classList.add("hidden");
+            document.getElementById("signupdiv").classList.add("hidden");
+            document.getElementById("signindiv").classList.remove("hidden");
+
+            
         }
         catch(error){
             if(error.response && error.response.data.errors){
@@ -78,7 +96,12 @@
         }   
     }
     
-    //window.onload = loadtodoapp;
+    function showSigninFunc(){
+        document.getElementById("navdiv").classList.add("hidden");
+        document.getElementById("signupdiv").classList.add("hidden");
+        document.getElementById("signindiv").classList.remove("hidden");
+    }
+
     async function signinFunc(){
         const email = document.getElementById("signinEmail").value;
         const password = document.getElementById("signinPassword").value;
@@ -95,9 +118,12 @@
             document.getElementById("signinEmail").value = "";
             document.getElementById("signinPassword").value = "";
 
-            loadtodoapp();
+            document.getElementById("signindiv").classList.add("hidden");
+            document.getElementById("todoappdiv").classList.remove("hidden");
+
+    
         }
-        catch(error){ //CORRECT THE ERROR PART
+        catch(error){
             if(error.response && error.response.data.message){
                 alert(error.response.data.message);
             }
@@ -186,7 +212,8 @@
     async function logoutFunc(){
         localStorage.removeItem("token")
         alert("Logged out successfully");
-        location.reload();
+        document.getElementById("todoappdiv").classList.add("hidden");
+        document.getElementById("signupdiv").classList.remove("hidden");
     }
 </script>
 </html>
