@@ -70,7 +70,7 @@ app.post("/signin", async function(req,res){  //to check if usename and password
     })
 
     if(!user){
-        res.status(403).jsonjson({
+        res.status(403).json({
             message: "Incorrect credentials"
         })
     }

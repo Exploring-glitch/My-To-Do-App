@@ -26,7 +26,6 @@
                 <div class="space-y-5 mt-10 mb-10 text-black">
                     <input id="signinEmail" type="text" placeholder="Email" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                     <input id="signinPassword" type="text" placeholder="Password" class="bg-white border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
-                    <input id="signinName" type="text" placeholder="Name" class="border-2 border-gray-600 rounded-md p-2 pr-28 shadow-sm focus:border-gray-700">
                 </div>
             </center>
             <center><button onclick="signinFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
@@ -74,7 +73,7 @@
                 alert(error.response.data.message);
             }
             else{
-                alert("Signup request falied!");
+                alert("Signup request falied.Please try again later.");
             }
         }   
     }
@@ -86,7 +85,7 @@
 
         try{
             const response = await axios.post("http://localhost:3005/signin", {
-            username : username,
+            email: email,
             password : password
             })
 
@@ -99,7 +98,9 @@
             loadtodoapp();
         }
         catch(error){ //CORRECT THE ERROR PART
-            alert("Invalid username or password");
+            if(error.response && error.response.data.message){
+                alert(error.response.data.message);
+            }
         }
     }
 
