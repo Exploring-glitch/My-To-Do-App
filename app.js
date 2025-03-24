@@ -1,3 +1,4 @@
+const axios = require("axios");
 const express = require("express");
 const app = express();
 const bcrypt = require("bcrypt");
@@ -91,36 +92,62 @@ app.post("/signin", async function(req,res){  //to check if usename and password
     }
 })
 
-function auth (req,res,next){
-    const token = req.headers.token;
-    console.log("received token:", token);
-    const decodedInfo = jwt.verify(token, JWT_SECRET); //gives you the decoded data
-    const decodedUsername = decodedInfo.username; //gives you the username from the decoded data
+function auth(req,res,next){
+    try{
+        const token = req.headers.token; //get the token from headers
 
-    if(decodedUsername){ //checks if the username is present in the decoded data
-        req.username = decodedUsername; //this is used to pass the decoded username to the next endpoint (data is passed in req)
-        return next();
-    }
+        if(!token){
+            return res.json({
+                message : "Error in token"
+            })
+        }
     
-    if(!decodedUsername){
+        const decodedData = jwt.verify(token, JWT_SECRET); //verify the token 
+        const decodedUserId = decodedData.id; //store the user id from the decoded data
+
+        if(decodedData){
+            req.userId = decodedUserId; //pass the decoded user id to the next endpoint
+            next();
+        }
+    }
+    catch(e){
         return res.status(404).json({
-            message: "You are not logged in" ///if there is no usernsame, that means your jwt is wrong and you didnt log in
+            message: "You are not logged in" 
         });
     }
 }
 
-/*app.get("/me", auth, function(req,res){  //to give the token and it will show the username and password
-    console.log("received me req");
-    let foundusers = null;
-    for(let i=0; i<users.length; i++){
-        if(users[i].username === req.username){ //"req.username" has the decoded username passed by the middleware auth
-            foundusers = users[i];
-        }
-    }
-    res.json({
-        username : foundusers.username,
-        password : foundusers.password
+app.post("/addtodo", auth, async function(req,res){
+    const userId = req.userId;
+    const title = req.body.title;
+
+    await TodoModel.create({
+        userId: userId,
+        title: title,
     })
-})*/
+
+    res.json({
+        message : "Todo created successfully"
+    })
+})
+
+app.get("/gettodo", auth, async function(req,res){
+
+    try{
+        const userId = req.userId;
+        const todos = await TodoModel.find({
+            userId : userId
+        })
+        res.json({
+            todos : todos
+        })
+    }
+    catch(e){
+        res.json({
+            message: "Cannot fetch todos"
+        })
+    }
+
+})
 
 app.listen(3005);

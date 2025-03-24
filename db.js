@@ -10,7 +10,6 @@ const User = new Schema({ //create a basic schema(structure) of how your databas
 const Todo = new Schema({
     userId: ObjectId,
     title: String,
-    done: Boolean,
 })
 UserModel = mongoose.model('users', User); //create a model where the schema for the users database is User so it stores the data in the users
 TodoModel = mongoose.model('todos', Todo);

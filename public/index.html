@@ -8,7 +8,6 @@
     <title>To-Do with Auth</title>
 </head>
 <body class="bg-gray-700">
-
     <div id="navdiv">
         <nav class="flex justify-between">
             <h1 class="mx-10 text-white font-bold text-2xl">To-Do App</h1>
@@ -40,32 +39,42 @@
             </center>
             <center><button onclick="signinFunc()" class="bg-gray-600 text-white px-4 py-2 mx-14 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Submit</button></center>
         </div>
-        
-        <div id="todoappdiv" class="hidden bg-gray-800 min-h-screen">
-            <button id="logoutButtondiv" onclick="logoutFunc()" class="my-3 mx-3 bg-red-600 text-white rounded-md hover:bg-red-700 shadow-md hover:scale-105 font-medium p-2">Log out</button>
-            <div class="flex justify-center">
-                <div class="bg-gray-100 border-2 border-black m-4 rounded-lg shadow-lg w-full max-w-lg p-6">
-                    <h1 class="text-2xl font-semibold text-center underline mb-4">TO-DO LIST</h1>
-                    <div id="todo-container" class="space-y-3"></div>
-                    <div class="flex gap-2 my-5">
-                        <input id="todo-input" type="text" placeholder="Add a new task..." class="flex-grow bg-white border-2 border-gray-600 text-black rounded-md p-2 shadow-sm focus:border-gray-700">
-                        <button onclick="addTask()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Add Task</button> 
-                    </div>
-                </div> 
-            </div> 
-        </div>
     </div>
+        
+    <div id="todoappdiv" class="hidden bg-gray-800 min-h-screen">
+        <button id="logoutButtondiv" onclick="logoutFunc()" class="my-3 mx-3 bg-red-600 text-white rounded-md hover:bg-red-700 shadow-md hover:scale-105 font-medium p-2">Log out</button>
+        
+        <div class="flex justify-center">
+            <div class="bg-gray-100 border-2 border-black m-4 rounded-lg shadow-lg w-full max-w-lg p-6">
+
+                <h1 class="text-2xl font-semibold text-center underline mb-4">TO-DO LIST</h1>
+
+                <div id="todo-container" class="space-y-3"></div>
+
+                <div class="flex gap-2 my-5">
+                    <input id="todo-input" type="text" placeholder="Add a new task..." class="flex-grow bg-white border-2 border-gray-600 text-black rounded-md p-2 shadow-sm focus:border-gray-700">
+                    <button onclick="addTask()" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 shadow-md hover:scale-105 font-medium">Add Task</button> 
+                </div>
+            </div> 
+        </div> 
+    </div>
+
 </body>
 
 <script>
-    
+     function showSigninFunc(){
+        document.getElementById("navdiv").classList.add("hidden");
+        document.getElementById("signupdiv").classList.add("hidden");
+        document.getElementById("signindiv").classList.remove("hidden");
+    }
+
     async function signupFunc(){
         const email = document.getElementById("signupEmail").value;
         const password = document.getElementById("signupPassword").value;
         const name = document.getElementById("signupName").value;
-        
+
         try{
-            const response = await axios.post("http://localhost:3005/signup", { //sends background request to our backend
+            const response = await axios.post("http://localhost:3005/signup",{ //sends background request to our backend
             email : email,
             password : password,
             name: name
@@ -80,8 +89,6 @@
             document.getElementById("navdiv").classList.add("hidden");
             document.getElementById("signupdiv").classList.add("hidden");
             document.getElementById("signindiv").classList.remove("hidden");
-
-            
         }
         catch(error){
             if(error.response && error.response.data.errors){
@@ -95,12 +102,6 @@
             }
         }   
     }
-    
-    function showSigninFunc(){
-        document.getElementById("navdiv").classList.add("hidden");
-        document.getElementById("signupdiv").classList.add("hidden");
-        document.getElementById("signindiv").classList.remove("hidden");
-    }
 
     async function signinFunc(){
         const email = document.getElementById("signinEmail").value;
@@ -113,6 +114,7 @@
             })
 
             localStorage.setItem("token",response.data.token);
+
             alert("You have successfully signed in");
 
             document.getElementById("signinEmail").value = "";
@@ -120,8 +122,6 @@
 
             document.getElementById("signindiv").classList.add("hidden");
             document.getElementById("todoappdiv").classList.remove("hidden");
-
-    
         }
         catch(error){
             if(error.response && error.response.data.message){
@@ -130,90 +130,112 @@
         }
     }
 
-    async function loadtodoapp(){
-        const token = localStorage.getItem("token");
-        if(!token){
-            return;
+
+
+
+    function createTodoElement(task, index) {
+        const taskDiv = document.createElement("div");
+        taskDiv.classList.add("flex", "justify-between", "items-center", "bg-white", "p-3", "rounded-md", "shadow-md", "border", "border-gray-300");
+
+        const taskText = document.createElement("span");
+        taskText.innerText = "• " + task.title;
+        taskText.classList.add("text-lg", "text-gray-700");
+
+        const buttonContainer = document.createElement("div");
+
+        const editButton = document.createElement("button");
+        editButton.innerText = "Edit";
+        editButton.classList.add("text-white", "bg-blue-500", "hover:bg-blue-600", "py-1", "px-3", "rounded-md", "shadow-sm", "mr-2", "hover:scale-105");
+        editButton.onclick = () => editTask(index);
+
+        const deleteButton = document.createElement("button");
+        deleteButton.innerText = "Delete";
+        deleteButton.classList.add("text-white", "bg-red-500", "hover:bg-red-600", "py-1", "px-3", "rounded-md", "shadow-sm", "hover:scale-105");
+        deleteButton.onclick = () => deleteTask(index);
+
+        buttonContainer.appendChild(editButton);
+        buttonContainer.appendChild(deleteButton);
+
+        taskDiv.appendChild(taskText);
+        taskDiv.appendChild(buttonContainer);
+
+        return taskDiv;
+    }
+
+    function render() {
+        console.log("Inside render");
+        const container = document.getElementById("todo-container");
+        container.innerHTML = "";
+
+        todos.forEach((task, index) => {
+            container.appendChild(createTodoElement(task, index));
+        });
+    }  
+
+    async function getTodos(){
+        console.log("Inside gettodos");
+        try{
+            const response = await axios.get("http://localhost:3005/gettodo", {
+                headers : {token : localStorage.getItem("token")}
+            })
+            render(response.data.todos);
         }
-        //const response = await axios.get("http://localhost:3005/me",{ 
-        //headers: { token : localStorage.getItem("token")}  
-        //})
-        //document.getElementById("information").innerHTML = "Username is " + response.data.username + " and Password is " + response.data.password;
-        document.getElementById("authdiv").classList.add("hidden");
-        document.getElementById("todoappdiv").classList.remove("hidden");
-
-        let todos = [];
-        function capitalize(str) {
-            return str.charAt(0).toUpperCase() + str.slice(1);
+        catch(error){
+            alert("Failed to fetch todos");
         }
-        function addTask() {
-            let inputElement = document.getElementById("todo-input");
-            let taskText = inputElement.value.trim();
-            
-            if (taskText === "") {
-                alert("Task cannot be empty!");
-                return;
-            }
+    }
 
-            todos.push({ title: capitalize(taskText) });
-            inputElement.value = "";
-            render();
-        }
-        function deleteTask(index) {
-            todos.splice(index, 1);
-            render();
-        }
-        function editTask(index) {
-            let newTitle = prompt("Edit your task:", todos[index].title);
-            if (newTitle !== null && newTitle.trim() !== "") {
-                todos[index].title = capitalize(newTitle.trim());
-                render();
-            }
-        }
-        function createTodoElement(task, index) {
-            const taskDiv = document.createElement("div");
-            taskDiv.classList.add("flex", "justify-between", "items-center", "bg-white", "p-3", "rounded-md", "shadow-md", "border", "border-gray-300");
-
-            const taskText = document.createElement("span");
-            taskText.innerText = "• " + task.title;
-            taskText.classList.add("text-lg", "text-gray-700");
-
-            const buttonContainer = document.createElement("div");
-
-            const editButton = document.createElement("button");
-            editButton.innerText = "Edit";
-            editButton.classList.add("text-white", "bg-blue-500", "hover:bg-blue-600", "py-1", "px-3", "rounded-md", "shadow-sm", "mr-2", "hover:scale-105");
-            editButton.onclick = () => editTask(index);
-
-            const deleteButton = document.createElement("button");
-            deleteButton.innerText = "Delete";
-            deleteButton.classList.add("text-white", "bg-red-500", "hover:bg-red-600", "py-1", "px-3", "rounded-md", "shadow-sm", "hover:scale-105");
-            deleteButton.onclick = () => deleteTask(index);
-
-            buttonContainer.appendChild(editButton);
-            buttonContainer.appendChild(deleteButton);
-
-            taskDiv.appendChild(taskText);
-            taskDiv.appendChild(buttonContainer);
-
-            return taskDiv;
-        }
-        function render() {
-            const container = document.getElementById("todo-container");
-            container.innerHTML = "";
-
-            todos.forEach((task, index) => {
-                container.appendChild(createTodoElement(task, index));
-            });
-        }
-            
+    function capitalize(str) {
+        return str.charAt(0).toUpperCase() + str.slice(1);
     }
     
+    async function addTask() {
+        let inputElement = document.getElementById("todo-input");
+        let input = inputElement.value.trim();
+        
+        if (input === "") {
+            alert("Task cannot be empty!");
+            return;
+        }
+        const title = capitalize(input);
+
+        console.log(title);
+        
+        try{
+            const response = await axios.post("http://localhost:3005/addtodo",{ 
+                title : title
+            }, {
+                headers : {token : localStorage.getItem("token")}
+            })
+
+            inputElement.value = "";
+            getTodos()
+        }
+        catch(error){
+            if(error.response && error.response.data.message){
+                elert(error.response.data.message);
+            }
+            else{
+                alert("Error");
+            }
+        }
+    }
+      
+    /*function deleteTask(index) {
+        todos.splice(index, 1);
+        render();
+    }
+    function editTask(index) {
+        let newTitle = prompt("Edit your task:", todos[index].title);
+        if (newTitle !== null && newTitle.trim() !== "") {
+            todos[index].title = capitalize(newTitle.trim());
+            render();
+        }
+    }*/
+        
     async function logoutFunc(){
         localStorage.removeItem("token")
         alert("Logged out successfully");
-        document.getElementById("todoappdiv").classList.add("hidden");
-        document.getElementById("signupdiv").classList.remove("hidden");
     }
 </script>
 </html>
