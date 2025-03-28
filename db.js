@@ -11,9 +11,9 @@ const Todo = new Schema({
     userId: ObjectId,
     title: String,
 })
+
 UserModel = mongoose.model('users', User); //create a model where the schema for the users database is User so it stores the data in the users
 TodoModel = mongoose.model('todos', Todo);
-
 
 module.exports = { //this is used to export in js, so that we can import and use the Usermodel and Todomodel in other files (index.js).
     UserModel: UserModel,

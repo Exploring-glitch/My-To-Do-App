@@ -80,10 +80,11 @@ app.post("/signin", async function(req,res){  //to check if usename and password
 
     if(passwordCompare){
         const token = jwt.sign({ id: user._id.toString() }, JWT_SECRET); //create a token with encoded user id
+        res.header("jwttoken", token);
         res.json({
             token: token //return the token
         })
-        res.header("jwttoken", token);
+        
     }
     else{
         res.status(403).json({
@@ -98,7 +99,7 @@ function auth(req,res,next){
 
         if(!token){
             return res.json({
-                message : "Error in token"
+                message : "No token provided"
             })
         }
     
@@ -112,7 +113,7 @@ function auth(req,res,next){
     }
     catch(e){
         return res.status(404).json({
-            message: "You are not logged in" 
+            message: "Invalid token" 
         });
     }
 }
@@ -121,18 +122,23 @@ app.post("/addtodo", auth, async function(req,res){
     const userId = req.userId;
     const title = req.body.title;
 
-    await TodoModel.create({
-        userId: userId,
-        title: title,
-    })
+    try{
+        await TodoModel.create({
+            userId: userId,
+            title: title,
+        })
+    
+        res.json({
+            message : "Todo created successfully"
+        })
+    }
+    catch (e) {
+        return res.status(500).json({ message: "Error creating todo" });
+    }
 
-    res.json({
-        message : "Todo created successfully"
-    })
 })
 
 app.get("/gettodo", auth, async function(req,res){
-
     try{
         const userId = req.userId;
         const todos = await TodoModel.find({
